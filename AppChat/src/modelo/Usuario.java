@@ -1,19 +1,17 @@
 package modelo;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Date;
 
 public class Usuario {
 	
-	private int id;
+	private int codigo;
 	private String nombre;
 	private String apellidos;
 	private String telefono;
-	private String contraseña;
+	private String password;
 	private LocalDate fechaNacimiento;
 	private String saludo;
 	private String imagen;
@@ -21,13 +19,14 @@ public class Usuario {
 	private List<Contacto> contactos;
 	private LocalDate fechaRegistro;
 	
-	public Usuario(String nombre, String apellidos, String telefono, String contraseña, LocalDate fechaNacimiento, String saludo,
+	public Usuario(String nombre, String apellidos, String telefono, String password, LocalDate fechaNacimiento, String saludo,
 			String imagen, LocalDate fechaRegistro) {
-		this.id = 0;
+		
+		this.codigo = 0;
 		this.nombre = nombre;
 		this.apellidos = apellidos;
 		this.telefono = telefono;
-		this.contraseña = contraseña;
+		this.password = password;
 		this.fechaNacimiento = fechaNacimiento;
 		this.saludo = saludo;
 		this.imagen = imagen;
@@ -36,8 +35,12 @@ public class Usuario {
 		this.fechaRegistro = fechaRegistro;
 	}
 
-	public Usuario(String nombre, String apellidos, String telefono, String contraseña, LocalDate fechaNacimiento, String imagen, LocalDate fechaRegistro) {
-		this(nombre, apellidos, telefono, contraseña, fechaNacimiento, "Saludo por defecto", imagen, fechaRegistro);
+	public Usuario(String nombre, String apellidos, String telefono, String password, LocalDate fechaNacimiento, String imagen, LocalDate fechaRegistro) {
+		this(nombre, apellidos, telefono, password, fechaNacimiento, "Saludo por defecto", imagen, fechaRegistro);
+	}
+	
+	public void addContacto(Contacto contacto) {
+		contactos.add(contacto);
 	}
 	
 	public boolean eliminarContacto(int codigo) {
@@ -66,7 +69,7 @@ public class Usuario {
 	}
 
 	public void setCodigo(int codigo) {
-		this.id = codigo;
+		this.codigo = codigo;
 	}
 
 	public void setNombre(String nombre) {
@@ -81,8 +84,8 @@ public class Usuario {
 		this.telefono = telefono;
 	}
 
-	public void setContraseña(String contraseña) {
-		this.contraseña = contraseña;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public void setFechaNacimiento(LocalDate fechaNacimiento) {
@@ -110,7 +113,7 @@ public class Usuario {
 	}
 
 	public int getCodigo() {
-		return id;
+		return codigo;
 	}
 	
 	public String getNombre() {
@@ -125,8 +128,8 @@ public class Usuario {
 		return telefono;
 	}
 
-	public String getContraseña() {
-		return contraseña;
+	public String getPassword() {
+		return password;
 	}
 
 	public LocalDate getFechaNacimiento() {

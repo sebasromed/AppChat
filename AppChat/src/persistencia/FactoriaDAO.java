@@ -6,7 +6,7 @@ package persistencia;
 
 public abstract class FactoriaDAO {
 	
-	public static final String DAO_TDS = "TDSFactoriaDAO";
+	public static final String DAO_TDS = "persistencia.TDSFactoriaDAO";
 
 	private static FactoriaDAO unicaInstancia;
 	
@@ -35,5 +35,6 @@ public abstract class FactoriaDAO {
 	// Metodos factoria para obtener adaptadores
 	
 	public abstract IAdaptadorUsuarioDAO getUsuarioDAO();	
-	//public abstract IAdaptadorContactoDAO getContactoDAO();
+	public abstract IAdaptadorContactoDAO getContactoDAO();
+	public abstract IAdaptadorMensajeDAO getMensajeDAO();
 }

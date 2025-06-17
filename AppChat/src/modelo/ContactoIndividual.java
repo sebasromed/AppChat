@@ -5,7 +5,7 @@ public class ContactoIndividual extends Contacto{
 	private String telefono;
 	
 		
-	protected ContactoIndividual(String nombre, String telefono) {
+	public ContactoIndividual(String nombre, String telefono) {
 		super(nombre);
 		this.telefono = telefono;
 	}

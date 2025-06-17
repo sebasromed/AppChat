@@ -63,7 +63,7 @@ public class VentanaChat {
 	 * Create the application.
 	 */
 	public VentanaChat() {
-		controlador = Controlador.getUnicaInstancia();
+		controlador = Controlador.INSTANCE;
 		initialize();
 	}
 	

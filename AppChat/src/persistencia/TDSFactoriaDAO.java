@@ -11,7 +11,19 @@ public final class TDSFactoriaDAO extends FactoriaDAO {
 	
 	@Override
 	public AdaptadorUsuarioTDS getUsuarioDAO() {	
-		return new AdaptadorUsuarioTDS(); 
+		return AdaptadorUsuarioTDS.INSTANCE; 
 	}
+
+	@Override
+	public IAdaptadorContactoDAO getContactoDAO() {
+		return AdaptadorContactoTDS.INSTANCE;
+	}
+
+	@Override
+	public IAdaptadorMensajeDAO getMensajeDAO() {
+		return AdaptadorMensajeTDS.INSTANCE;
+	}
+	
+	
 
 }

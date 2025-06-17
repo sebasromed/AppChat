@@ -4,12 +4,14 @@ import java.time.LocalDateTime;
 
 public class Mensaje {
 	
+	private int codigo;
 	private String texto;
 	private LocalDateTime horaEnvio;
-	private String emisor;
+	private Usuario emisor;
 	private Contacto receptor;
 	
-	public Mensaje(String texto, LocalDateTime horaEnvio, String emisor, Contacto receptor) {
+	public Mensaje(String texto, LocalDateTime horaEnvio, Usuario emisor, Contacto receptor) {
+		this.codigo = 0;
 		this.texto = texto;
 		this.horaEnvio = horaEnvio;
 		this.emisor = emisor;
@@ -17,32 +19,42 @@ public class Mensaje {
 	}
 
 	//--------------- Getters and Setters ------------------
+	
+	public int getCodigo() {
+		return codigo;
+	}
+	
 	public String getTexto() {
 		return texto;
+	}
+
+	public LocalDateTime getHoraEnvio() {
+		return horaEnvio;
+	}
+	
+	public Usuario getEmisor() {
+		return emisor;
+	}
+
+	public Contacto getReceptor() {
+		return receptor;
+	}
+	
+	public void setCodigo(int codigo) {
+		this.codigo = codigo;
 	}
 
 	public void setTexto(String texto) {
 		this.texto = texto;
 	}
 
-	public LocalDateTime getHoraEnvio() {
-		return horaEnvio;
-	}
-
 	public void setHoraEnvio(LocalDateTime horaEnvio) {
 		this.horaEnvio = horaEnvio;
 	}
 
-	public String getEmisor() {
-		return emisor;
-	}
-
-	public void setEmisor(String emisor) {
+	
+	public void setEmisor(Usuario emisor) {
 		this.emisor = emisor;
-	}
-
-	public Contacto getReceptor() {
-		return receptor;
 	}
 
 	public void setReceptor(Contacto receptor) {

@@ -15,6 +15,10 @@ public class FotoPerfil extends JPanel {
 	 public FotoPerfil(BufferedImage image, int size) {
 		this.image = image;
 		this.diametro = size;
+		setPreferredSize(new Dimension(diametro, diametro));
+		setMinimumSize(new Dimension(diametro, diametro));
+	    setMaximumSize(new Dimension(diametro, diametro));
+	    setOpaque(false);
 	}
 
 
@@ -24,6 +28,8 @@ public class FotoPerfil extends JPanel {
 
 	public void setImage(BufferedImage image) {
 		this.image = image;
+		repaint();
+		revalidate();
 	}
 
 	public int getDiametro() {
@@ -37,20 +43,19 @@ public class FotoPerfil extends JPanel {
 
 	@Override
      protected void paintComponent(Graphics g) {
-		 super.paintComponent(g);
-         Graphics2D g2d = (Graphics2D) g;
-
-         // Hacer que los bordes sean suaves
-        // g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-         // Crear un círculo
-         Ellipse2D circle = new Ellipse2D.Double(0, 0, diametro, diametro);
-
-         // Recortar la imagen dentro del círculo
-         g2d.setClip(circle);
-
-         // Escalar la imagen para que se ajuste al círculo
-         g2d.drawImage(image, 0, 0, diametro, diametro, this);
+		super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        // Draw white circle as background
+        g2.setColor(Color.WHITE);
+        g2.fillOval(0, 0, diametro, diametro);
+        // Draw the image clipped to a circle
+        if (image != null) {
+            Shape oldClip = g2.getClip();
+            g2.setClip(new java.awt.geom.Ellipse2D.Float(0, 0, diametro, diametro));
+            g2.drawImage(image, 0, 0, diametro, diametro, null);
+            g2.setClip(oldClip);
+        }
+        g2.dispose();
 	 }
 
 }

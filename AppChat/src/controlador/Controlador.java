@@ -1,6 +1,6 @@
 package controlador;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 import javax.swing.JFrame;
 
@@ -9,35 +9,33 @@ import interfaz.VentanaContactos;
 import interfaz.VentanaLogin;
 import interfaz.VentanaPrincipal;
 import interfaz.VentanaRegistro;
-import modelo.RepositorioUsuarios;
+import modelo.CatalogoContactos;
+import modelo.CatalogoMensajes;
+import modelo.CatalogoUsuarios;
 import modelo.Usuario;
-import persistencia.AdaptadorUsuarioTDS;
 import persistencia.DAOException;
 import persistencia.FactoriaDAO;
+import persistencia.IAdaptadorContactoDAO;
+import persistencia.IAdaptadorMensajeDAO;
 import persistencia.IAdaptadorUsuarioDAO;
 
-public class Controlador {
-
-	private static Controlador unicaInstancia;
+public enum Controlador {
+	INSTANCE;
 	
 	private Usuario usuarioActual;
-	private FactoriaDAO factoria;
+	
 	private IAdaptadorUsuarioDAO adaptadorUsuario;
-	//Resto de adaptadores...
+	private IAdaptadorContactoDAO adaptadorContacto;
+	private IAdaptadorMensajeDAO adaptadorMensaje;
+	
+	private CatalogoUsuarios catalogoUsuarios;
+	private CatalogoContactos catalogoContactos;
+	private CatalogoMensajes catalogoMensajes;
 	
 	private Controlador() {
 		usuarioActual = null;
-		try {
-			factoria = FactoriaDAO.getInstancia();
-		} catch (DAOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static Controlador getUnicaInstancia() {
-		if (unicaInstancia == null)
-			unicaInstancia = new Controlador();
-		return unicaInstancia;
+		inicializarAdaptadores();
+		inicializarCatalogos();
 	}
 	
 	
@@ -45,44 +43,58 @@ public class Controlador {
 	public Usuario getUsuarioActual() {
 		return usuarioActual;
 	}
+	
+	private void inicializarAdaptadores() {
+		FactoriaDAO factoria = null;
+		try {
+			factoria = FactoriaDAO.getInstancia(FactoriaDAO.DAO_TDS);
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		adaptadorUsuario = factoria.getUsuarioDAO();
+		adaptadorContacto = factoria.getContactoDAO();
+		adaptadorMensaje = factoria.getMensajeDAO();
+	}
+
+	private void inicializarCatalogos() {
+		catalogoUsuarios = CatalogoUsuarios.INSTANCE;
+		catalogoContactos = CatalogoContactos.INSTANCE;
+		catalogoMensajes = CatalogoMensajes.INSTANCE;
+	}
 
 	public boolean esUsuarioRegistrado(String tlf) {
-		return RepositorioUsuarios.INSTANCE.findUsuario(tlf) != null;
+		return CatalogoUsuarios.INSTANCE.getUsuario(tlf) != null;
 	}
 
 	public boolean loginUsuario(String tlf, String password) {
-		Usuario usuario = RepositorioUsuarios.INSTANCE.findUsuario(tlf);
-		if (usuario != null && usuario.getContraseña().equals(password)) {
+		Usuario usuario = CatalogoUsuarios.INSTANCE.getUsuario(tlf);
+		if (usuario != null && usuario.getPassword().equals(password)) {
 			this.usuarioActual = usuario;
 			return true;
 		}
 		return false;
 	}
 	
-	public boolean registrarUsuario(String nombre, String apellidos, String tlf, String contraseña, Date fecha, String saludo, String imagen) {
+	public boolean registrarUsuario(String nombre, String apellidos, String tlf, String contraseña, LocalDate fechaNacimiento, String saludo, String imagen, LocalDate fechaRegistro) {
 		if (esUsuarioRegistrado(tlf))
 			return false;
 		Usuario usuario;
 		if(saludo.equals(""))
-			 usuario = new Usuario(nombre, apellidos, tlf, contraseña, fecha, imagen);
+			 usuario = new Usuario(nombre, apellidos, tlf, contraseña, fechaNacimiento, imagen, fechaRegistro);
 		else
-			 usuario = new Usuario(nombre, apellidos, tlf, contraseña, fecha, saludo, imagen);
+			 usuario = new Usuario(nombre, apellidos, tlf, contraseña, fechaNacimiento, saludo, imagen, fechaRegistro);
 		
-		adaptadorUsuario = factoria.getUsuarioDAO(); /* IAdaptadorDAO para almacenar el nuevo Usuario en la BD */
 		adaptadorUsuario.addUsuario(usuario);
-		RepositorioUsuarios.INSTANCE.addUsuario(usuario);
-		this.usuarioActual = usuario;
+		catalogoUsuarios.addUsuario(usuario);
 		return true;
 	}
 
 	public boolean borrarUsuario(Usuario usuario) {
-		if (!esUsuarioRegistrado(usuario.getTlf()))
+		if (!esUsuarioRegistrado(usuario.getTelefono()))
 			return false;
 
-		
-		adaptadorUsuario = factoria.getUsuarioDAO(); /* IAdaptadorDAO para borrar el Usuario de la BD */
 		adaptadorUsuario.deleteUsuario(usuario);
-		RepositorioUsuarios.INSTANCE.removeUsuario(usuario);
+		catalogoUsuarios.removeUsuario(usuario);
 		return true;
 	}
 	

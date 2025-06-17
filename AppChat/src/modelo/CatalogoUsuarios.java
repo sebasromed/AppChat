@@ -1,7 +1,7 @@
 package modelo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +9,7 @@ import persistencia.DAOException;
 import persistencia.FactoriaDAO;
 import persistencia.IAdaptadorUsuarioDAO;
 
-public enum RepositorioUsuarios {
+public enum CatalogoUsuarios {
 	INSTANCE;
 	private Map<String, Usuario> usuarios;
 	
@@ -17,31 +17,31 @@ public enum RepositorioUsuarios {
 	private IAdaptadorUsuarioDAO adaptadorUsuario;
 	
 	
-	private RepositorioUsuarios() {
+	private CatalogoUsuarios() {
 		try {
 			dao = FactoriaDAO.getInstancia(FactoriaDAO.DAO_TDS);
 			adaptadorUsuario = dao.getUsuarioDAO();
 			usuarios = new HashMap<String, Usuario>();
-			this.cargarRepo();
+			this.cargarCatalogo();
 		} catch (DAOException eDAO) {
 			eDAO.printStackTrace();
 		}
 	}
-	
-	private void cargarRepo() {
-		List<Usuario> usuariosBD = adaptadorUsuario.getAllUsuarios();
-		for (Usuario usuario : usuariosBD)
-			usuarios.put(usuario.getTelefono(), usuario);
+	public List<Usuario> getUsuarios(){
+		ArrayList<Usuario> lista = new ArrayList<Usuario>();
+		for (Usuario u:usuarios.values()) 
+			lista.add(u);
+		return lista;
 	}
 	
-	
-	
-	public List<Usuario> findUsuarios() throws DAOException {
-		return new LinkedList<Usuario>(usuarios.values());
+	public Usuario getUsuario(int codigo) {
+		for (Usuario u:usuarios.values()) {
+			if (u.getCodigo()==codigo) return u;
+		}
+		return null;
 	}
-	
-	public Usuario findUsuario(String telefono) {
-		return usuarios.get(telefono);
+	public Usuario getUsuario(String telefono) {
+		return usuarios.get(telefono); 
 	}
 
 	public void addUsuario(Usuario usuario) {
@@ -51,6 +51,12 @@ public enum RepositorioUsuarios {
 	public void removeUsuario(Usuario usuario) {
 		usuarios.remove(usuario.getTelefono());
 	}
+	
+	private void cargarCatalogo() {
+		List<Usuario> usuariosBD = adaptadorUsuario.getAllUsuarios();
+		for (Usuario usuario : usuariosBD)
+			usuarios.put(usuario.getTelefono(), usuario);
+	}	
 	
 	
 }
