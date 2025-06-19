@@ -1,6 +1,7 @@
 package persistencia;
 
 import modelo.Mensaje;
+import modelo.Mensaje.TipoMensaje;
 import beans.Entidad;
 import beans.Propiedad;
 import tds.driver.FactoriaServicioPersistencia;
@@ -26,6 +27,7 @@ public enum AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
     private static final String HORA_ENVIO = "horaEnvio";
     private static final String EMISOR = "emisor";
     private static final String RECEPTOR = "receptor";
+    private static final String TIPO_MENSAJE = "tipoMensaje";
 
     private final ServicioPersistencia servPersistencia;
     private final DateTimeFormatter dateTimeFormatter;
@@ -117,8 +119,9 @@ public enum AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
     private Mensaje entidadToMensaje(Entidad eMensaje) {
         String texto = servPersistencia.recuperarPropiedadEntidad(eMensaje, TEXTO);
         LocalDateTime horaEnvio = LocalDateTime.parse(servPersistencia.recuperarPropiedadEntidad(eMensaje, HORA_ENVIO), dateTimeFormatter);
+        TipoMensaje tipoMensaje = TipoMensaje.valueOf(servPersistencia.recuperarPropiedadEntidad(eMensaje, TIPO_MENSAJE));
 
-        return new Mensaje(texto, horaEnvio, null, null);
+        return new Mensaje(texto, horaEnvio, null, null, tipoMensaje);
     }
 
     private Entidad mensajeToEntidad(Mensaje mensaje) {
@@ -128,7 +131,8 @@ public enum AdaptadorMensajeTDS implements IAdaptadorMensajeDAO {
             new Propiedad(TEXTO, mensaje.getTexto()),
             new Propiedad(HORA_ENVIO, mensaje.getHoraEnvio().format(dateTimeFormatter)),
             new Propiedad(EMISOR, String.valueOf(mensaje.getEmisor().getCodigo())),
-            new Propiedad(RECEPTOR, String.valueOf(mensaje.getReceptor().getCodigo())))));
+            new Propiedad(RECEPTOR, String.valueOf(mensaje.getReceptor().getCodigo())),
+            new Propiedad(TIPO_MENSAJE, String.valueOf(mensaje.getTipoMensaje())))));
         return eMensaje;
     }
 }

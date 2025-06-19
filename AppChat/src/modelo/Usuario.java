@@ -147,6 +147,28 @@ public class Usuario {
 	public List<Contacto> getContactos() {
 		return contactos;
 	}
+	
+	public List<Contacto> getContactosOrdenadosPorNombre() {
+		return contactos.stream()
+	            .sorted((c1, c2) -> c1.getNombre().compareToIgnoreCase(c2.getNombre()))
+	            .collect(Collectors.toList());
+	}
+	
+	public List<Contacto> getContactosOrdenadosPorChatReciente() {
+		return contactos.stream()
+	            .sorted((c1, c2) -> {
+	                // If both contacts have no messages, they are considered equal
+	                if (c1.getMensajes().isEmpty() && c2.getMensajes().isEmpty()) return 0;
+	                // If one contact has no messages, it is considered less recent
+	                if (c1.getMensajes().isEmpty()) return 1;
+	                if (c2.getMensajes().isEmpty()) return -1;
+	                // Compare the timestamps of the last messages
+	                return c2.getMensajes().get(c2.getMensajes().size() - 1).getHoraEnvio()
+	                        .compareTo(c1.getMensajes().get(c1.getMensajes().size() - 1).getHoraEnvio());
+	            })
+	            .collect(Collectors.toList());
+	}
+		
 
 	public LocalDate getFechaRegistro() {
 		return fechaRegistro;

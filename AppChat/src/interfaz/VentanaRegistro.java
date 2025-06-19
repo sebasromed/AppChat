@@ -6,6 +6,7 @@ import javax.swing.*;
 import controlador.Controlador;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
@@ -13,30 +14,30 @@ import java.time.ZoneId;
 import java.util.stream.Stream;
 import com.toedter.calendar.JDateChooser;
 
-public class VentanaRegistro {
-    private JFrame ventanaReg;
+public class VentanaRegistro extends JFrame implements ActionListener {
+
     private JPanel panelCentral, panelImagen, panelBotones;
-    private JTextField textNombre, textApellidos, textTelefono, textPassword, textPassword2, textImagen;
+    private JTextField textNombre, textApellidos, textTelefono, textPassword, textPassword2;
     private JTextArea textSaludo;
     private JLabel notaRequerimiento;
-    private JLabel nombre, apellidos, telefono, password, password2, fecha, saludo, imagen;
+    private JLabel nombre, apellidos, telefono, password, password2, fecha, saludo;
     private FotoPerfil iconoImagen;
-    private JButton botonCancelar, botonAceptar, botonImagen;
-    private Controlador controlador;
+    private JButton botonCancelar, botonAceptar, botonElegirImagen;
     private JDateChooser fechaChooser;
+    private File rutaImagenSeleccionada = null;
 
-    public VentanaRegistro(Controlador controlador) {
-        this.controlador = controlador;
+    public VentanaRegistro() {
         inicializar();
+        setVisible(true);
     }
 
     private void inicializar() {
-        ventanaReg = new JFrame("Registro de Usuario");
-        ventanaReg.setResizable(false);
-        ventanaReg.setSize(new Dimension(850, 520));
-        ventanaReg.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ventanaReg.setLocationRelativeTo(null);
-        ventanaReg.setLayout(new BorderLayout(20, 10));
+        setTitle("Registro de Usuario");
+        setResizable(false);
+        setSize(new Dimension(850, 520));
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(20, 10));
 
         // WhatsApp-like light green
         Color bgColor = new Color(220, 248, 198);
@@ -150,15 +151,14 @@ public class VentanaRegistro {
         imgGbc.anchor = GridBagConstraints.CENTER;
         imgGbc.fill = GridBagConstraints.NONE;
 
+        int diametro = 100;
+        BufferedImage defaultImage = null;
         try {
-            String path = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
-            URL url = new URL(path);
-            BufferedImage image = ImageIO.read(url);
-            int diametro = 100;
-            iconoImagen = new FotoPerfil(image, diametro);
+            defaultImage = ImageIO.read(getClass().getResource("/blank-profile-circle.png"));
+            iconoImagen = new FotoPerfil(defaultImage, diametro);
             panelImagen.add(iconoImagen, imgGbc);
-        } catch (Exception e) {
-            // Error loading image
+        } catch (IOException ex) {
+            // If not found, defaultImage remains null
         }
 
         // Add the rest of the controls below the image (adjust gridy accordingly)
@@ -167,55 +167,32 @@ public class VentanaRegistro {
         imgGbc.insets = new Insets(10, 0, 0, 0);
         imgGbc.fill = GridBagConstraints.HORIZONTAL;
 
-        textImagen = new JTextField();
-        textImagen.setMaximumSize(new Dimension(150, 25));
-        setPlaceholder(textImagen, "Link a la imagen");
-        panelImagen.add(textImagen, imgGbc);
 
         imgGbc.gridy++;
-        botonImagen = new JButton("Establecer imagen");
-        panelImagen.add(botonImagen, imgGbc);
-
-        actionEstablecer();
+        botonElegirImagen = new JButton("Elegir");
+        botonElegirImagen.addActionListener(this);
+        panelImagen.add(botonElegirImagen, imgGbc);
+        
+        rutaImagenSeleccionada = null;
 
         // Panel Botones
         panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
         panelBotones.setBackground(bgColor);
         botonCancelar = new JButton("Cancelar");
+        botonCancelar.addActionListener(this);
+        
         botonAceptar = new JButton("Aceptar");
+        botonAceptar.addActionListener(this);
+        
         panelBotones.add(botonCancelar);
         panelBotones.add(botonAceptar);
 
-        actionCancelar();
-        actionAceptar();
-
         // Add panels to window
-        ventanaReg.getContentPane().setBackground(bgColor);
-        ventanaReg.add(panelCentral, BorderLayout.CENTER);
-        ventanaReg.add(panelImagen, BorderLayout.EAST);
-        ventanaReg.add(panelBotones, BorderLayout.SOUTH);
+        getContentPane().setBackground(bgColor);
+        add(panelCentral, BorderLayout.CENTER);
+        add(panelImagen, BorderLayout.EAST);
+        add(panelBotones, BorderLayout.SOUTH);
 
-        ventanaReg.setVisible(true);
-    }
-
-    // Placeholder para un campo de texto
-    private void setPlaceholder(JTextField field, String placeholder) {
-        field.setForeground(Color.GRAY);
-        field.setText(placeholder);
-        field.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (field.getText().equals(placeholder)) {
-                    field.setText("");
-                    field.setForeground(Color.BLACK);
-                }
-            }
-            public void focusLost(FocusEvent e) {
-                if (field.getText().isEmpty()) {
-                    field.setForeground(Color.GRAY);
-                    field.setText(placeholder);
-                }
-            }
-        });
     }
     
     // Placeholder para un área de texto (como saludo)
@@ -238,70 +215,63 @@ public class VentanaRegistro {
         });
     }
 
-    private void actionCancelar() {
-        botonCancelar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                controlador.cambiarVentanaLogin(ventanaReg);
-            }
-        });
-    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object src = e.getSource();
+        if (src == botonCancelar) {
+            Controlador.cambiarVentana(this, VentanaLogin::new);
+        } else if (src == botonAceptar) {
+            String valorNombre = textNombre.getText().trim();
+            String valorApellidos = textApellidos.getText().trim();
+            String valorTelefono = textTelefono.getText().trim();
+            String valorPassword = textPassword.getText().trim();
+            String valorPassword2 = textPassword2.getText().trim();
+            LocalDate valorFechaNacimiento = fechaChooser.getDate() != null
+                    ? fechaChooser.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+                    : null;
+            String valorSaludo = textSaludo.getText().trim();
+            LocalDate valorFechaRegistro = LocalDate.now();
 
-    private void actionAceptar() {
-        botonAceptar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                String valorNombre = textNombre.getText().trim();
-                String valorApellidos = textApellidos.getText().trim();
-                String valorTelefono = textTelefono.getText().trim();
-                String valorPassword = textPassword.getText().trim();
-                String valorPassword2 = textPassword2.getText().trim();
-                LocalDate valorFechaNacimiento = fechaChooser.getDate() != null
-                        ? fechaChooser.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-                        : null;
-                String valorSaludo = textSaludo.getText().trim();
-                String valorImagen = textImagen.getText().trim();
-                LocalDate valorFechaRegistro = LocalDate.now();
-
-                if (Stream.of(valorNombre, valorApellidos, valorTelefono, valorPassword, valorPassword2, valorImagen).anyMatch(v -> v.isBlank())
-                        || valorFechaNacimiento == null
-                        || valorImagen.equals("Link a la imagen")) {
-                    JOptionPane.showMessageDialog(ventanaReg, "Por favor, rellene todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
-                } else if (!valorPassword.equals(valorPassword2)) {
-                    JOptionPane.showMessageDialog(ventanaReg, "Las contraseñas no coinciden.", "Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    if (valorSaludo.isBlank()) {
-                        valorSaludo = "Hey there, I'm using AppChat";
-                    }
-                    if (controlador.registrarUsuario(valorNombre, valorApellidos, valorTelefono, valorPassword,
-                            valorFechaNacimiento, valorSaludo, valorImagen, valorFechaRegistro)) {
-                        controlador.cambiarVentanaPrincipal(ventanaReg);
-                    } else {
-                        JOptionPane.showMessageDialog(ventanaReg, "Teléfono ya registrado.", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-        });
-    }
-
-    private void actionEstablecer() {
-        botonImagen.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                String valorImagen = textImagen.getText().trim();
-                if (valorImagen == null || valorImagen.isBlank() || valorImagen.equals("Link a la imagen")) {
-                    valorImagen = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+            if (Stream.of(valorNombre, valorApellidos, valorTelefono, valorPassword, valorPassword2).anyMatch(v -> v.isBlank())
+                    || valorFechaNacimiento == null) {
+                JOptionPane.showMessageDialog(this, "Por favor, rellene todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else if (!valorPassword.equals(valorPassword2)) {
+                JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else if (rutaImagenSeleccionada == null) {
+                JOptionPane.showMessageDialog(this, "Por favor, seleccione una foto de perfil.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                if (valorSaludo.isBlank()) {
+                    valorSaludo = "Hey there, I'm using AppChat";
                 }
                 try {
-                    URL url = new URL(valorImagen);
-                    BufferedImage image = ImageIO.read(url);
-                    iconoImagen.setImage(image);
+                    String valorImagen = Controlador.INSTANCE.guardarImagenPerfil(rutaImagenSeleccionada, valorTelefono);
+                    if (Controlador.INSTANCE.registrarUsuario(valorNombre, valorApellidos, valorTelefono, valorPassword,
+                            valorFechaNacimiento, valorSaludo, valorImagen, valorFechaRegistro)) {
+                        Controlador.cambiarVentana(this, VentanaLogin::new);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Teléfono ya registrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(ventanaReg, "No se pudo cargar la imagen.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "No se pudo guardar la imagen.", "Error", JOptionPane.ERROR_MESSAGE);
+                    e1.printStackTrace();
                 }
-                iconoImagen.revalidate();
-                iconoImagen.repaint();
             }
-        });
+        } else if (src == botonElegirImagen) {
+            PanelArrastraImagen dialog = new PanelArrastraImagen(this);
+            java.util.List<java.io.File> files = dialog.showDialog();
+            if (!files.isEmpty()) {
+                try {
+                    java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(files.get(0));
+                    if (image != null) {
+                        iconoImagen.setImage(image);
+                        iconoImagen.revalidate();
+                        iconoImagen.repaint();
+                        rutaImagenSeleccionada = files.get(0);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "No se pudo cargar la imagen.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
     }
 }

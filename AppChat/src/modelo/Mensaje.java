@@ -4,18 +4,25 @@ import java.time.LocalDateTime;
 
 public class Mensaje {
 	
+	public enum TipoMensaje {
+		ENVIADO,
+		RECIBIDO;
+	}
+	
 	private int codigo;
 	private String texto;
 	private LocalDateTime horaEnvio;
 	private Usuario emisor;
 	private Contacto receptor;
+	private TipoMensaje tipoMensaje;
 	
-	public Mensaje(String texto, LocalDateTime horaEnvio, Usuario emisor, Contacto receptor) {
+	public Mensaje(String texto, LocalDateTime horaEnvio, Usuario emisor, Contacto receptor, TipoMensaje tipoMensaje) {
 		this.codigo = 0;
 		this.texto = texto;
 		this.horaEnvio = horaEnvio;
 		this.emisor = emisor;
 		this.receptor = receptor;
+		this.tipoMensaje = tipoMensaje;
 	}
 
 	//--------------- Getters and Setters ------------------
@@ -40,6 +47,10 @@ public class Mensaje {
 		return receptor;
 	}
 	
+	public TipoMensaje getTipoMensaje() {
+		return tipoMensaje;
+	}
+	
 	public void setCodigo(int codigo) {
 		this.codigo = codigo;
 	}
@@ -60,7 +71,10 @@ public class Mensaje {
 	public void setReceptor(Contacto receptor) {
 		this.receptor = receptor;
 	}
-	
+
+	public void setTipoMensaje(TipoMensaje tipoMensaje) {
+		this.tipoMensaje = tipoMensaje;
+	}
 	
 	
 }

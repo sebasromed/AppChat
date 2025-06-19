@@ -2,86 +2,77 @@ package interfaz;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
-
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
-
+import java.util.List;
+import modelo.Contacto;
 import controlador.Controlador;
 
-public class VentanaPrincipal {
+public class VentanaPrincipal extends JFrame implements ActionListener {
 
-	private JFrame frame;
-	private JPanel contenedor;
-	private Controlador controlador;
+    private JPanel contenedor;
+    private JButton contactos, premium, buscarMensajes, logout;
 
-	/**
-	 * Launch the application.
-	 */
-	/*
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					VentanaPrincipal window = new VentanaPrincipal();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	*/
+    public VentanaPrincipal() {
+        initialize();
+        setVisible(true);
+    }
 
-	/**
-	 * Create the application.
-	 */
-	public VentanaPrincipal(Controlador controlador) {
-		this.controlador = controlador;
-		initialize();
-	}
+    private void initialize() {
+        setSize(new Dimension(900, 600));
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+        setLocationRelativeTo(null);
 
-	/**
-	 * Initialize the contents of the frame.
-	 */
-	private void initialize() {
-		frame = new JFrame();
-		frame.setSize(new Dimension(700, 600));
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
-		
-		//Creación de panel supeior
-		JPanel panel_superior = new JPanel();
-		panel_superior.setPreferredSize(new Dimension(700, 70));
-		panel_superior.setMinimumSize(new Dimension(700, 70));
-		panel_superior.setMaximumSize(new Dimension(700, 70));
-		panel_superior.setBorder(new TitledBorder(null, null, TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_superior.setLayout(new BoxLayout(panel_superior, BoxLayout.X_AXIS));
-		
-		//Añadir panel superior a la ventana
-		frame.getContentPane().add(panel_superior, BorderLayout.NORTH);
-		
-		//(1)
-		JComboBox<String> elegir_busqueda = new JComboBox();
-		elegir_busqueda.setPreferredSize(new Dimension(100, 25));
-		elegir_busqueda.setMinimumSize(new Dimension(100, 25));
-		elegir_busqueda.setMaximumSize(new Dimension(100, 25));
-		elegir_busqueda.setVisible(true);
-		elegir_busqueda.addItem("teléfono");
-		elegir_busqueda.addItem("Nombre");
-		panel_superior.add(elegir_busqueda);
-		
-		
-		
-		
-		
-		
-		
-	}
+        JPanel panel_superior = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        panel_superior.setPreferredSize(new Dimension(900, 70));
+        panel_superior.setBorder(new TitledBorder(null, null, TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
+        int diametro = 50;
+        FotoPerfil fotoPerfil = new FotoPerfil(Controlador.INSTANCE.getUsuarioActual().getImagen(), diametro);
+        panel_superior.add(fotoPerfil);
+
+        // Single "Contactos" button
+        contactos = new JButton("Contactos");
+        contactos.setPreferredSize(new Dimension(150, 40));
+        contactos.setMargin(new Insets(2, 2, 2, 2));
+        contactos.addActionListener(this);
+        panel_superior.add(contactos);
+
+        premium = new JButton("Premium");
+        premium.addActionListener(this);
+        panel_superior.add(premium);
+
+        buscarMensajes = new JButton("Buscar Mensajes");
+        buscarMensajes.addActionListener(this);
+        panel_superior.add(buscarMensajes);
+
+        logout = new JButton("Logout");
+        logout.addActionListener(this);
+        panel_superior.add(logout);
+
+        getContentPane().add(panel_superior, BorderLayout.NORTH);
+
+        List<Contacto> contactosList = Controlador.INSTANCE.getContactos();
+        PanelListaContactos panelContactos = new PanelListaContactos(contactosList);
+        getContentPane().add(panelContactos, BorderLayout.WEST);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object src = e.getSource();
+        if (src == contactos) {
+            // Add your logic for the "Contactos" button here
+            // For example, open the contacts window or panel
+        }
+        if (src == logout) {
+            Controlador.INSTANCE.setUsuarioActual(null);
+            Controlador.cambiarVentana(this, VentanaLogin::new);
+        }
+    }
 }

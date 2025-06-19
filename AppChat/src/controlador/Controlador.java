@@ -1,6 +1,11 @@
 package controlador;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 
@@ -9,9 +14,9 @@ import interfaz.VentanaContactos;
 import interfaz.VentanaLogin;
 import interfaz.VentanaPrincipal;
 import interfaz.VentanaRegistro;
-import modelo.CatalogoContactos;
-import modelo.CatalogoMensajes;
 import modelo.CatalogoUsuarios;
+import modelo.Contacto;
+import modelo.ContactoIndividual;
 import modelo.Usuario;
 import persistencia.DAOException;
 import persistencia.FactoriaDAO;
@@ -29,8 +34,6 @@ public enum Controlador {
 	private IAdaptadorMensajeDAO adaptadorMensaje;
 	
 	private CatalogoUsuarios catalogoUsuarios;
-	private CatalogoContactos catalogoContactos;
-	private CatalogoMensajes catalogoMensajes;
 	
 	private Controlador() {
 		usuarioActual = null;
@@ -38,7 +41,9 @@ public enum Controlador {
 		inicializarCatalogos();
 	}
 	
-	
+	public void setUsuarioActual(Usuario usuario) {
+		this.usuarioActual = usuario;
+	}
 	
 	public Usuario getUsuarioActual() {
 		return usuarioActual;
@@ -58,8 +63,6 @@ public enum Controlador {
 
 	private void inicializarCatalogos() {
 		catalogoUsuarios = CatalogoUsuarios.INSTANCE;
-		catalogoContactos = CatalogoContactos.INSTANCE;
-		catalogoMensajes = CatalogoMensajes.INSTANCE;
 	}
 
 	public boolean esUsuarioRegistrado(String tlf) {
@@ -86,6 +89,9 @@ public enum Controlador {
 		
 		adaptadorUsuario.addUsuario(usuario);
 		catalogoUsuarios.addUsuario(usuario);
+		
+		ContactoIndividual contactoUsuarioActual = new ContactoIndividual(usuario.getNombre() + " " + usuario.getApellidos(), usuario.getTelefono());
+		adaptadorContacto.addContacto(contactoUsuarioActual);
 		return true;
 	}
 
@@ -98,35 +104,44 @@ public enum Controlador {
 		return true;
 	}
 	
-	public void cambiarVentanaRegistrar(JFrame log) {
-		VentanaRegistro interfaz = new VentanaRegistro(this);
-		log.dispose();
+	public List<Contacto> getContactos() {
+		return usuarioActual.getContactos();
 	}
 	
-	public void cambiarVentanaLogin(JFrame log) {
-		VentanaLogin interfaz = new VentanaLogin(this);
-		log.dispose();
+	public List<Contacto> getContactosOrdenadosAlfabeticamente() {
+		return usuarioActual.getContactosOrdenadosPorNombre();
 	}
 	
-	public void cambiarVentanaPrincipal(JFrame log) {
-		VentanaPrincipal interfaz = new VentanaPrincipal(this);
-		log.dispose();
+	public List<Contacto> getContactosOrdenadosCronologicamente() {
+		return usuarioActual.getContactosOrdenadosPorChatReciente();
 	}
 	
-	
-	public void cambiarVentanaBuscar(JFrame log) {
-		VentanaBuscar interfaz = new VentanaBuscar();
-		log.dispose();
+	public Usuario getUsuarioDeContacto(Contacto contacto) {
+		return catalogoUsuarios.getUsuario(contacto.getCodigo());
 	}
 	
-	public void cambiarVentanaAñadirContacto() {
-		VentanaContactos interfaz = new VentanaContactos(this);
+	public List<Usuario> getUsuariosDeContactos(List<Contacto> contactos) {
+		List<Usuario> usuarios = new ArrayList<Usuario>();
+		for (Contacto c : contactos) {
+			usuarios.add(catalogoUsuarios.getUsuario(c.getCodigo()));
+		}
+		return usuarios;
 		
 	}
 	
-	public void cambiarVenanaContactos() {
-		VentanaContactos interfaz = new VentanaContactos(this);
+	public String guardarImagenPerfil(File origen, String telefonoUsuario) throws IOException {
+		String extension = origen.getName().substring(origen.getName().lastIndexOf('.') + 1);
+	    File destino = new File("imagenes", telefonoUsuario + "." + extension);
+	    java.nio.file.Files.createDirectories(destino.getParentFile().toPath());
+	    java.nio.file.Files.copy(origen.toPath(), destino.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+	    return destino.getPath();
 	}
 	
-	
+	public static <T extends JFrame> void cambiarVentana(JFrame ventanaActual, Supplier<T> ventanaSupplier) {
+        T nuevaVentana = ventanaSupplier.get(); // Crear la nueva ventana
+        nuevaVentana.setVisible(true); // Asegurar que la ventana sea visible
+        if (ventanaActual != null) {
+            ventanaActual.dispose(); // Cerrar la ventana actual
+        }
+    }
 }

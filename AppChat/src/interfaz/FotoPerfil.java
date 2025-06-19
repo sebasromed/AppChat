@@ -1,10 +1,14 @@
 package interfaz;
 
 import java.awt.*;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JPanel;
 
@@ -19,6 +23,14 @@ public class FotoPerfil extends JPanel {
 		setMinimumSize(new Dimension(diametro, diametro));
 	    setMaximumSize(new Dimension(diametro, diametro));
 	    setOpaque(false);
+	}
+	 
+	public FotoPerfil(String imagePath, int size) {
+	        this(loadImageFromPath(imagePath), size);
+	}
+	
+	public FotoPerfil(File imageFile, int size) {
+	        this(loadImageFromFile(imageFile), size);
 	}
 
 
@@ -39,8 +51,35 @@ public class FotoPerfil extends JPanel {
 	public void setDiametro(int diametro) {
 		this.diametro = diametro;
 	}
-
-
+	
+	private static BufferedImage loadImageFromPath(String path) {
+        try {
+            return ImageIO.read(new File(path));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+	
+	private static BufferedImage loadImageFromFile(File file) {
+        try {
+            return ImageIO.read(file);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+	
+	public static BufferedImage toBufferedImage(Image img) {
+	    if (img instanceof BufferedImage) {
+	        return (BufferedImage) img;
+	    }
+	    BufferedImage bimage = new BufferedImage(
+	        img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+	    Graphics2D bGr = bimage.createGraphics();
+	    bGr.drawImage(img, 0, 0, null);
+	    bGr.dispose();
+	    return bimage;
+	}
+	
 	@Override
      protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -57,5 +96,4 @@ public class FotoPerfil extends JPanel {
         }
         g2.dispose();
 	 }
-
 }
