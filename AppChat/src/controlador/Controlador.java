@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 
@@ -16,6 +18,7 @@ import interfaz.VentanaPrincipal;
 import interfaz.VentanaRegistro;
 import modelo.CatalogoUsuarios;
 import modelo.Contacto;
+import modelo.ContactoGrupo;
 import modelo.ContactoIndividual;
 import modelo.Usuario;
 import persistencia.DAOException;
@@ -104,6 +107,43 @@ public enum Controlador {
 		return true;
 	}
 	
+	public boolean borrarMiembroGrupo(ContactoIndividual contacto, ContactoGrupo grupo) {
+		if (grupo.getMiembros().contains(contacto)) {
+			Contacto grupoInicial = grupo;
+			grupo.getMiembros().remove(contacto);
+			adaptadorContacto.updateContacto(grupo);
+			
+			List<Contacto> contactos = usuarioActual.getContactos();
+		    int idx = contactos.indexOf(grupoInicial);
+		    if (idx != -1) {
+		     	contactos.set(idx, grupo);
+		     } 
+		    adaptadorUsuario.updateUsuario(usuarioActual);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean borrarGrupo(ContactoGrupo grupo) {
+		if (usuarioActual.getContactos().contains(grupo)) {
+			usuarioActual.eliminarContacto(grupo.getCodigo());
+			adaptadorContacto.deleteContacto(grupo);
+			adaptadorUsuario.updateUsuario(usuarioActual);
+			return true;
+		}
+		return false;
+	}
+	
+	public ContactoIndividual getContactoDeUsuarioActual() {
+	    String nombreCompleto = usuarioActual.getNombre() + " " + usuarioActual.getApellidos();
+	    String telefono = usuarioActual.getTelefono();
+	    return usuarioActual.getContactos().stream()
+	        .filter(c -> c instanceof ContactoIndividual)
+	        .map(c -> (ContactoIndividual) c)
+	        .filter(ci -> ci.getNombre().equals(nombreCompleto) && ci.getTelefono().equals(telefono))
+	        .findFirst()
+	        .orElse(null);
+	}	
 	public List<Contacto> getContactos() {
 		return usuarioActual.getContactos();
 	}
@@ -116,8 +156,39 @@ public enum Controlador {
 		return usuarioActual.getContactosOrdenadosPorChatReciente();
 	}
 	
-	public Usuario getUsuarioDeContacto(Contacto contacto) {
-		return catalogoUsuarios.getUsuario(contacto.getCodigo());
+	public Usuario getUsuarioDeContacto(ContactoIndividual contacto) {
+		return catalogoUsuarios.getUsuario(contacto.getTelefono());
+	}
+	
+	public Usuario getUsuarioPorTelefono(String telefono) {
+		return catalogoUsuarios.getUsuario(telefono);
+	}
+	
+	public ContactoIndividual getContactoPorTelefono(String telefono) {
+		return usuarioActual.getContactos().stream()
+			    .filter(c -> c instanceof ContactoIndividual)
+			    .map(c -> (ContactoIndividual) c)
+			    .filter(ci -> ci.getTelefono().equals(telefono))
+			    .findFirst()
+			    .orElse(null);
+	}
+	
+	public ContactoIndividual getContactoPorNombre(String nombre) {
+		return usuarioActual.getContactos().stream()
+			    .filter(c -> c instanceof ContactoIndividual)
+			    .map(c -> (ContactoIndividual) c)
+			    .filter(ci -> ci.getTelefono().equals(nombre))
+			    .findFirst()
+			    .orElse(null);
+	}
+	
+	public ContactoGrupo getGrupoPorNombre(String nombre) {
+		return usuarioActual.getContactos().stream()
+			    .filter(c -> c instanceof ContactoGrupo)
+			    .map(c -> (ContactoGrupo) c)
+			    .filter(cg -> cg.getNombre().equals(nombre))
+			    .findFirst()
+			    .orElse(null);
 	}
 	
 	public List<Usuario> getUsuariosDeContactos(List<Contacto> contactos) {
@@ -126,15 +197,60 @@ public enum Controlador {
 			usuarios.add(catalogoUsuarios.getUsuario(c.getCodigo()));
 		}
 		return usuarios;
-		
 	}
 	
-	public String guardarImagenPerfil(File origen, String telefonoUsuario) throws IOException {
-		String extension = origen.getName().substring(origen.getName().lastIndexOf('.') + 1);
-	    File destino = new File("imagenes", telefonoUsuario + "." + extension);
+	public static List<ContactoIndividual> getContactosIndividuales(List<Contacto> contactos) {
+		return contactos.stream()
+			    .filter(c -> c instanceof ContactoIndividual)
+			    .map(c -> (ContactoIndividual) c)
+			    .collect(Collectors.toList());
+	}
+	
+	public boolean registrarContacto(String nombre, String telefono) {
+		if (getContactoPorTelefono(telefono) != null  || getContactoPorNombre(nombre) != null) {
+			return false; // El contacto ya existe o el nombre ya está en uso
+		}
+		else {
+			ContactoIndividual nuevoContacto = new ContactoIndividual(nombre, telefono);
+			adaptadorContacto.addContacto(nuevoContacto);
+			
+			usuarioActual.addContacto(nuevoContacto);
+			adaptadorUsuario.updateUsuario(usuarioActual);
+			return true;
+		}
+	}
+	
+	public boolean registrarGrupo(String nombre, String rutaImagen, List<ContactoIndividual> miembros) {
+		if (getGrupoPorNombre(nombre) != null) {
+			return false; // El grupo ya existe
+		}
+		
+		ContactoGrupo contactoGrupo = new ContactoGrupo(usuarioActual, nombre, rutaImagen, miembros);
+			
+		adaptadorContacto.addContacto(contactoGrupo);
+		usuarioActual.addContacto(contactoGrupo);
+		adaptadorUsuario.updateUsuario(usuarioActual);
+		return true;
+	}
+	
+	
+
+	public String guardarImagenPerfil(String rutaOrigen, String nombre) throws IOException {
+	    File origen = new File(rutaOrigen);
+	    String extension = origen.getName().substring(origen.getName().lastIndexOf('.') + 1);
+	    String stringRandom = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+	    File destino = new File("imagenes", nombre + "_" + stringRandom + "." + extension); // Asi se generan nombres unicos
 	    java.nio.file.Files.createDirectories(destino.getParentFile().toPath());
 	    java.nio.file.Files.copy(origen.toPath(), destino.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-	    return destino.getPath();
+	    return pathSinContrabarras(destino.getPath());
+	}
+	
+	// Ya que las rutas de windows tienen \ y el metodo para leer imagenes de recursos espera /
+	private String pathSinContrabarras(String path) {
+		if (path != null && !path.isEmpty()) {
+			return path.replace("\\", "/");
+		}
+		return path;
 	}
 	
 	public static <T extends JFrame> void cambiarVentana(JFrame ventanaActual, Supplier<T> ventanaSupplier) {

@@ -94,6 +94,9 @@ public class FotoPerfil extends JPanel {
             g2.drawImage(image, 0, 0, diametro, diametro, null);
             g2.setClip(oldClip);
         }
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.setStroke(new BasicStroke(1f));
+        g2.drawOval(0, 0, diametro - 1, diametro - 1);
         g2.dispose();
 	 }
 }

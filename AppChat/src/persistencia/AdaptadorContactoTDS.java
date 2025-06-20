@@ -12,6 +12,7 @@ import modelo.Contacto;
 import modelo.ContactoGrupo;
 import modelo.ContactoIndividual;
 import modelo.Mensaje;
+import modelo.Usuario;
 import beans.Entidad;
 import beans.Propiedad;
 
@@ -75,6 +76,8 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 	@Override
 	public boolean deleteContacto(Contacto contacto) {
 		Entidad eContacto = servPersistencia.recuperarEntidad(contacto.getCodigo());
+		
+		PoolDAO.getUnicaInstancia().removeObjeto(contacto.getCodigo());
 		
 		return servPersistencia.borrarEntidad(eContacto);
 	}
@@ -153,7 +156,7 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
             String numeroTelefono = servPersistencia.recuperarPropiedadEntidad(eContacto, TELEFONO);
             return new ContactoIndividual(nombre, numeroTelefono);
         } else {
-        	ContactoIndividual administrador = obtenerMiembroDesdeCodigo(servPersistencia.recuperarPropiedadEntidad(eContacto, ADMINISTRADOR));
+        	Usuario administrador = obtenerAdministradorDesdeCodigo(servPersistencia.recuperarPropiedadEntidad(eContacto, ADMINISTRADOR));
             String imagen = servPersistencia.recuperarPropiedadEntidad(eContacto, IMAGEN);
             List<ContactoIndividual> miembros = obtenerMiembrosDesdeCodigos(
                 servPersistencia.recuperarPropiedadEntidad(eContacto, MIEMBROS));
@@ -173,10 +176,12 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 
 		if (contacto instanceof ContactoIndividual) {
 			propiedades.add(new Propiedad(TELEFONO, ((ContactoIndividual) contacto).getTelefono()));
+			propiedades.add(new Propiedad(ADMINISTRADOR, ""));
 			propiedades.add(new Propiedad(IMAGEN, ""));
 			propiedades.add(new Propiedad(MIEMBROS, ""));
 		} else if (contacto instanceof ContactoGrupo) {
 			propiedades.add(new Propiedad(TELEFONO, ""));
+			propiedades.add(new Propiedad(ADMINISTRADOR, String.valueOf(((ContactoGrupo) contacto).getAdministrador().getCodigo())));
 			propiedades.add(new Propiedad(IMAGEN, ((ContactoGrupo) contacto).getImagen()));
 			propiedades.add(new Propiedad(MIEMBROS, obtenerCodigosMiembros(((ContactoGrupo) contacto).getMiembros())));
 		}
@@ -207,14 +212,20 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 		return miembros;
 	}
 	
-	   private ContactoIndividual obtenerMiembroDesdeCodigo(String codigo) {
-		   int id = Integer.parseInt(codigo);
-		   Contacto contacto = getContacto(id);
-		   if (contacto instanceof ContactoIndividual) {
-			   return (ContactoIndividual) contacto;
-		   }
-	        return null;
-	    }
+	private ContactoIndividual obtenerMiembroDesdeCodigo(String codigo) {
+		int id = Integer.parseInt(codigo);
+		Contacto contacto = getContacto(id);
+		if (contacto instanceof ContactoIndividual) {
+			return (ContactoIndividual) contacto;
+		}
+	    	return null;
+	}
+	
+	private Usuario obtenerAdministradorDesdeCodigo(String codigo) {
+		int id = Integer.parseInt(codigo);
+		Usuario admin = AdaptadorUsuarioTDS.INSTANCE.getUsuario(id);
+	    return admin;
+	}
 	
 	private String obtenerCodigosMensajes(List<Mensaje> mensajes) {
 		String lineas = "";

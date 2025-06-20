@@ -1,7 +1,9 @@
 package interfaz;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,19 +19,34 @@ public class ContactoPanelDetallado extends ContactoPanel {
 		}
 		
 		public void construirPanel(Contacto contacto) {
-	        JPanel info = new JPanel();
+			JPanel info = new JPanel();
 	        info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
 	        info.setOpaque(false);
-	        info.add(new JLabel("Nombre: " + contacto.getNombre()));
-	        if (contacto instanceof ContactoGrupo) {
-	            // No se muestra nada mas, los grupos no tienen teléfono ni saludo
-	        } else {
-	            if (!contacto.getNombre().startsWith("+") && contacto instanceof ContactoIndividual) {
-	                info.add(new JLabel("Teléfono: " + ((ContactoIndividual) contacto).getTelefono()));
-	            }
-	            info.add(new JLabel("Saludo: " + getUserDeContacto().getSaludo()));
+	        
+	        JPanel labelsPanel = new JPanel();
+	        labelsPanel.setLayout(new BoxLayout(labelsPanel, BoxLayout.Y_AXIS));
+	        labelsPanel.setOpaque(false);
+	        
+	        JLabel nombreLabel = new JLabel(contacto.getNombre());
+	        nombreLabel.setFont(new Font(nombreLabel.getFont().getName(), Font.BOLD, 18));
+	        nombreLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+	        labelsPanel.add(nombreLabel);
+	        if (contacto.getNombre().startsWith("+")) {
+	        	// No mostrar numero de telefono en el campo telefono, ya que se muestra en el nombre
 	        }
-	        info.add(new JLabel("Saludo: " + getUserDeContacto().getSaludo()));
+	        else if (contacto instanceof ContactoIndividual) {
+	        	JLabel telefonoLabel = new JLabel("Teléfono: " + ((ContactoIndividual) contacto).getTelefono());
+	            telefonoLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+	            labelsPanel.add(telefonoLabel);
+	            JLabel saludoLabel = new JLabel("Saludo: " + getUserDeContacto().getSaludo());
+		        saludoLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+		        labelsPanel.add(saludoLabel);
+	        }
+	        
+	        info.add(Box.createVerticalGlue());
+	        info.add(labelsPanel);
+	        info.add(Box.createVerticalGlue());
+	        
 	        add(info, BorderLayout.CENTER);
 		}
 

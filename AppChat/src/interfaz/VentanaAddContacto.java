@@ -5,16 +5,21 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-public class VentanaAñadirContacto extends JDialog {
+import controlador.Controlador;
+import modelo.Usuario;
+
+public class VentanaAddContacto extends JDialog implements ActionListener {
 
     private JPanel panelCampos, panelBoton;
     private JLabel lblTitulo;
     private JTextField textoNombre, textoTelefono;
     private JButton botonAceptar;
-    Color colorFondo = new Color(220, 248, 198);
+    private final Color colorFondo = new Color(220, 248, 198);
+    private JFrame parent;
 
-    public VentanaAñadirContacto(JFrame parent) {
+    public VentanaAddContacto(JFrame parent) {
         super(parent, "Añadir Contacto", true);
+        this.parent = parent;
         getContentPane().setBackground(colorFondo);
         inicializar(parent);
         setVisible(true);
@@ -79,7 +84,7 @@ public class VentanaAñadirContacto extends JDialog {
     private void panelBoton() {
         panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER));
         botonAceptar = new JButton("Aceptar");
-        botonAceptar.addActionListener(e -> dispose());
+        botonAceptar.addActionListener(this);
         panelBoton.add(botonAceptar);
         panelBoton.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         panelBoton.setBackground(colorFondo);
@@ -102,4 +107,45 @@ public class VentanaAñadirContacto extends JDialog {
             }
         });
     }
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object src = e.getSource();
+		if (src == botonAceptar) {
+			String valorTelefono = textoTelefono.getText().trim();
+			String valorNombre = textoNombre.getText().trim();
+			
+			if (valorTelefono.isEmpty() || valorNombre.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, rellene todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+			
+			Usuario usuarioConTelefono = Controlador.INSTANCE.getUsuarioPorTelefono(valorTelefono);
+			if (usuarioConTelefono == null) {
+				JOptionPane.showMessageDialog(this, 
+						"No existe un usuario con el teléfono " + valorTelefono, 
+						"Error", 
+						JOptionPane.ERROR_MESSAGE);
+			}
+			else {
+				if (Controlador.INSTANCE.registrarContacto(valorNombre, valorTelefono)) {
+					JOptionPane.showMessageDialog(this, 
+							"Contacto añadido correctamente: " + valorNombre + " (" + valorTelefono + ")", 
+							"Éxito", 
+							JOptionPane.INFORMATION_MESSAGE);
+					if (parent instanceof VentanaContactos) {
+					    ((VentanaContactos) parent).refrescarContactos();
+					}
+							dispose();
+				}
+				else {
+					JOptionPane.showMessageDialog(this, 
+							"Ya existe un contacto con el teléfono " + valorTelefono + " o el nombre " + valorNombre, 
+							"Error", 
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}
+		
+	}
 }

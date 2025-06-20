@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.stream.Stream;
 import com.toedter.calendar.JDateChooser;
 
@@ -24,7 +25,9 @@ public class VentanaRegistro extends JFrame implements ActionListener {
     private FotoPerfil iconoImagen;
     private JButton botonCancelar, botonAceptar, botonElegirImagen;
     private JDateChooser fechaChooser;
-    private File rutaImagenSeleccionada = null;
+    private String rutaImagenSeleccionada = null;
+    
+    private static final String PLACEHOLDER_SALUDO = "Máx. 100 caracteres";
 
     public VentanaRegistro() {
         inicializar();
@@ -133,7 +136,7 @@ public class VentanaRegistro extends JFrame implements ActionListener {
         textSaludo.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         textSaludo.setBackground(Color.WHITE);
         textSaludo.setPreferredSize(new Dimension(220, 48));
-        setPlaceholder(textSaludo, "Máx. 100 caracteres");
+        setPlaceholder(textSaludo, PLACEHOLDER_SALUDO);
         gbc.gridx = 1; gbc.gridy = row++;
         panelCentral.add(textSaludo, gbc);
 
@@ -232,7 +235,7 @@ public class VentanaRegistro extends JFrame implements ActionListener {
             String valorSaludo = textSaludo.getText().trim();
             LocalDate valorFechaRegistro = LocalDate.now();
 
-            if (Stream.of(valorNombre, valorApellidos, valorTelefono, valorPassword, valorPassword2).anyMatch(v -> v.isBlank())
+            if (Stream.of(valorNombre, valorApellidos, valorTelefono, valorPassword, valorPassword2).anyMatch(v -> isBlank(v))
                     || valorFechaNacimiento == null) {
                 JOptionPane.showMessageDialog(this, "Por favor, rellene todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
             } else if (!valorPassword.equals(valorPassword2)) {
@@ -240,7 +243,7 @@ public class VentanaRegistro extends JFrame implements ActionListener {
             } else if (rutaImagenSeleccionada == null) {
                 JOptionPane.showMessageDialog(this, "Por favor, seleccione una foto de perfil.", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                if (valorSaludo.isBlank()) {
+                if (valorSaludo.equals(PLACEHOLDER_SALUDO) || isBlank(valorSaludo)) {
                     valorSaludo = "Hey there, I'm using AppChat";
                 }
                 try {
@@ -258,15 +261,15 @@ public class VentanaRegistro extends JFrame implements ActionListener {
             }
         } else if (src == botonElegirImagen) {
             PanelArrastraImagen dialog = new PanelArrastraImagen(this);
-            java.util.List<java.io.File> files = dialog.showDialog();
+            List<File> files = dialog.showDialog();
             if (!files.isEmpty()) {
                 try {
-                    java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(files.get(0));
+                    BufferedImage image = ImageIO.read(files.get(0));
                     if (image != null) {
                         iconoImagen.setImage(image);
                         iconoImagen.revalidate();
                         iconoImagen.repaint();
-                        rutaImagenSeleccionada = files.get(0);
+                        rutaImagenSeleccionada = files.get(0).getPath();
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "No se pudo cargar la imagen.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -274,4 +277,9 @@ public class VentanaRegistro extends JFrame implements ActionListener {
             }
         }
     }
+    
+    // Metodo auxiliar para usar el metodo isBlank (no disponible en Java 8)
+    private boolean isBlank(String str) {
+		return str == null || str.trim().isEmpty();
+	}
 }

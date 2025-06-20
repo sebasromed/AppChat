@@ -4,19 +4,19 @@ import java.util.List;
 
 public class ContactoGrupo extends Contacto{
 	
-	private ContactoIndividual administrador;
+	private Usuario administrador;
 	private String imagen; 
 	private List<ContactoIndividual> miembros;
 	
 	// Con foto de grupo
-	public ContactoGrupo(ContactoIndividual administrador, String nombre, String imagen, List<ContactoIndividual> miembros) {
+	public ContactoGrupo(Usuario administrador, String nombre, String imagen, List<ContactoIndividual> miembros) {
 		super(nombre);
 		this.administrador = administrador;
 		this.imagen = imagen;
 		this.miembros = miembros;
 	}
 	// Sin foto de grupo
-	public ContactoGrupo(ContactoIndividual administrador, String nombre, List<ContactoIndividual> miembros) {
+	public ContactoGrupo(Usuario administrador, String nombre, List<ContactoIndividual> miembros) {
 		this(administrador, nombre, "ImagenDefecto.png", miembros);
 	}
 	
@@ -30,7 +30,7 @@ public class ContactoGrupo extends Contacto{
 	
 	// ----------------------- Getters and Setters -------------------
 	
-	public ContactoIndividual getAdministrador() {
+	public Usuario getAdministrador() {
 		return administrador;
 	}
 	
@@ -42,7 +42,7 @@ public class ContactoGrupo extends Contacto{
 		return miembros;
 	}
 	
-	public void setAdministrador(ContactoIndividual administrador) {
+	public void setAdministrador(Usuario administrador) {
 		this.administrador = administrador;
 	}
 	

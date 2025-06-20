@@ -1,6 +1,7 @@
 package interfaz;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -59,7 +60,8 @@ public class VentanaPrincipal extends JFrame implements ActionListener {
         getContentPane().add(panel_superior, BorderLayout.NORTH);
 
         List<Contacto> contactosList = Controlador.INSTANCE.getContactos();
-        PanelListaContactos panelContactos = new PanelListaContactos(contactosList);
+        PanelListaContactos panelContactos = new PanelListaContactos(contactosList, true);
+        panelContactos.setBackground(new Color(220, 248, 198));
         getContentPane().add(panelContactos, BorderLayout.WEST);
     }
 
@@ -67,8 +69,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         if (src == contactos) {
-            // Add your logic for the "Contactos" button here
-            // For example, open the contacts window or panel
+            Controlador.cambiarVentana(this, VentanaContactos::new);
         }
         if (src == logout) {
             Controlador.INSTANCE.setUsuarioActual(null);

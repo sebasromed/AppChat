@@ -25,6 +25,10 @@ public class PoolDAO {
 	public void addObjeto(int id, Object objeto) {
 		pool.put(id, objeto);
 	}
+	
+	public void removeObjeto(int id) {
+		pool.remove(id);
+	}
 
 	public boolean contiene(int id) {
 		return pool.containsKey(id);
