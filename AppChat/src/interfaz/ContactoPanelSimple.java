@@ -20,25 +20,25 @@ public class ContactoPanelSimple extends ContactoPanel {
 	@Override
 	protected void construirPanel(Contacto contacto) {
 		JPanel info = new JPanel();
-        info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
-        info.setOpaque(false);
-        
-        JPanel labelsPanel = new JPanel();
-        labelsPanel.setLayout(new BoxLayout(labelsPanel, BoxLayout.Y_AXIS));
-        labelsPanel.setOpaque(false);
-        labelsPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+		info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
+		info.setOpaque(false);
 
-        JLabel nombreLabel = new JLabel(contacto.getNombre());
-        nombreLabel.setFont(new Font(nombreLabel.getFont().getName(), Font.BOLD, 18));
-        nombreLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-        labelsPanel.add(nombreLabel);
+		JPanel labelsPanel = new JPanel();
+		labelsPanel.setLayout(new BoxLayout(labelsPanel, BoxLayout.Y_AXIS));
+		labelsPanel.setOpaque(false);
+		labelsPanel.setAlignmentX(JPanel.LEFT_ALIGNMENT);
 
-        info.add(Box.createVerticalGlue());
-        info.add(labelsPanel);
-        info.add(Box.createVerticalGlue());
+		JLabel nombreLabel = new JLabel(contacto.getNombre());
+		nombreLabel.setFont(new Font(nombreLabel.getFont().getName(), Font.BOLD, 18));
+		nombreLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+		labelsPanel.add(nombreLabel);
 
-        add(info, BorderLayout.CENTER);
-        add(info, BorderLayout.CENTER);
+		info.add(Box.createVerticalGlue());
+		info.add(labelsPanel);
+		info.add(Box.createVerticalGlue());
+
+		add(info, BorderLayout.CENTER);
+		add(info, BorderLayout.CENTER);
 	}
 
 }

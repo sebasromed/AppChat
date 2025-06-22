@@ -23,7 +23,7 @@ import beans.Propiedad;
  */
 public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 	INSTANCE;
-	
+
 	// Constantes para facilitar el manejo de entidades
 	private static final String CONTACTO = "contacto";
 	private static final String TIPO = "tipo";
@@ -42,15 +42,17 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 	AdaptadorContactoTDS() {
 		servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
 	}
-	 
+
 	@Override
 	public void addContacto(Contacto contacto) {
 		Entidad eContacto = null;
-		
+
 		try {
 			eContacto = servPersistencia.recuperarEntidad(contacto.getCodigo());
-		} catch (NullPointerException e) {}
-		if (eContacto != null) return;
+		} catch (NullPointerException e) {
+		}
+		if (eContacto != null)
+			return;
 
 		// registrar primero los atributos que son objetos
 		if (contacto instanceof ContactoGrupo) {
@@ -58,7 +60,7 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 			for (ContactoIndividual c : grupo.getMiembros())
 				addContacto(c);
 		}
-		
+
 		AdaptadorMensajeTDS adaptadorM = AdaptadorMensajeTDS.INSTANCE;
 		for (Mensaje m : contacto.getMensajes())
 			adaptadorM.addMensaje(m);
@@ -76,9 +78,9 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 	@Override
 	public boolean deleteContacto(Contacto contacto) {
 		Entidad eContacto = servPersistencia.recuperarEntidad(contacto.getCodigo());
-		
+
 		PoolDAO.getUnicaInstancia().removeObjeto(contacto.getCodigo());
-		
+
 		return servPersistencia.borrarEntidad(eContacto);
 	}
 
@@ -110,30 +112,28 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 
 	@Override
 	public Contacto getContacto(int id) {
-        if (PoolDAO.getUnicaInstancia().contiene(id)) {
-            return (ContactoIndividual) PoolDAO.getUnicaInstancia().getObjeto(id);
-        }
+		if (PoolDAO.getUnicaInstancia().contiene(id)) {
+			return (Contacto) PoolDAO.getUnicaInstancia().getObjeto(id);
+		}
 
-        Entidad eContacto = servPersistencia.recuperarEntidad(id);
-        Contacto contacto = entidadToContacto(eContacto);
-        contacto.setCodigo(id);
+		Entidad eContacto = servPersistencia.recuperarEntidad(id);
+		Contacto contacto = entidadToContacto(eContacto);
+		contacto.setCodigo(id);
 
-        PoolDAO.getUnicaInstancia().addObjeto(id, contacto);
+		PoolDAO.getUnicaInstancia().addObjeto(id, contacto);
 
-        List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(
-            servPersistencia.recuperarPropiedadEntidad(eContacto, MENSAJES));
-        contacto.setMensajes(mensajes);
+		List<Mensaje> mensajes = obtenerMensajesDesdeCodigos(
+				servPersistencia.recuperarPropiedadEntidad(eContacto, MENSAJES));
+		contacto.setMensajes(mensajes);
 
-        if (contacto instanceof ContactoGrupo) {
-            List<ContactoIndividual> miembros = obtenerMiembrosDesdeCodigos(
-                servPersistencia.recuperarPropiedadEntidad(eContacto, MIEMBROS));
-            ((ContactoGrupo) contacto).setMiembros(miembros);
-        }
-        
-        
+		if (contacto instanceof ContactoGrupo) {
+			List<ContactoIndividual> miembros = obtenerMiembrosDesdeCodigos(
+					servPersistencia.recuperarPropiedadEntidad(eContacto, MIEMBROS));
+			((ContactoGrupo) contacto).setMiembros(miembros);
+		}
 
-        return contacto;
-    }
+		return contacto;
+	}
 
 	@Override
 	public List<Contacto> getAllContactos() {
@@ -145,34 +145,32 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 		}
 		return contactos;
 	}
-	
-	
+
 	// -------------------Funciones auxiliares-----------------------------
 	private Contacto entidadToContacto(Entidad eContacto) {
-        String nombre = servPersistencia.recuperarPropiedadEntidad(eContacto, NOMBRE);
-        String tipo = servPersistencia.recuperarPropiedadEntidad(eContacto, TIPO);
+		String nombre = servPersistencia.recuperarPropiedadEntidad(eContacto, NOMBRE);
+		String tipo = servPersistencia.recuperarPropiedadEntidad(eContacto, TIPO);
 
-        if (CONTACTO_INDIVIDUAL.equals(tipo)) {
-            String numeroTelefono = servPersistencia.recuperarPropiedadEntidad(eContacto, TELEFONO);
-            return new ContactoIndividual(nombre, numeroTelefono);
-        } else {
-        	Usuario administrador = obtenerAdministradorDesdeCodigo(servPersistencia.recuperarPropiedadEntidad(eContacto, ADMINISTRADOR));
-            String imagen = servPersistencia.recuperarPropiedadEntidad(eContacto, IMAGEN);
-            List<ContactoIndividual> miembros = obtenerMiembrosDesdeCodigos(
-                servPersistencia.recuperarPropiedadEntidad(eContacto, MIEMBROS));
-            return new ContactoGrupo(administrador, nombre, imagen, miembros);
-        }
-    }
+		if (CONTACTO_INDIVIDUAL.equals(tipo)) {
+			String numeroTelefono = servPersistencia.recuperarPropiedadEntidad(eContacto, TELEFONO);
+			return new ContactoIndividual(nombre, numeroTelefono);
+		} else {
+			Usuario administrador = obtenerAdministradorDesdeCodigo(
+					servPersistencia.recuperarPropiedadEntidad(eContacto, ADMINISTRADOR));
+			String imagen = servPersistencia.recuperarPropiedadEntidad(eContacto, IMAGEN);
+			List<ContactoIndividual> miembros = obtenerMiembrosDesdeCodigos(
+					servPersistencia.recuperarPropiedadEntidad(eContacto, MIEMBROS));
+			return new ContactoGrupo(administrador, nombre, imagen, miembros);
+		}
+	}
 
 	private Entidad contactoToEntidad(Contacto contacto) {
 		Entidad eContacto = new Entidad();
 		eContacto.setNombre(CONTACTO);
 
-		List<Propiedad> propiedades = new ArrayList<>(Arrays.asList(
-			new Propiedad(NOMBRE, contacto.getNombre()),
-			new Propiedad(TIPO, contacto instanceof ContactoIndividual ? CONTACTO_INDIVIDUAL : CONTACTO_GRUPO),
-			new Propiedad(MENSAJES, obtenerCodigosMensajes(contacto.getMensajes()))
-		));
+		List<Propiedad> propiedades = new ArrayList<>(Arrays.asList(new Propiedad(NOMBRE, contacto.getNombre()),
+				new Propiedad(TIPO, contacto instanceof ContactoIndividual ? CONTACTO_INDIVIDUAL : CONTACTO_GRUPO),
+				new Propiedad(MENSAJES, obtenerCodigosMensajes(contacto.getMensajes()))));
 
 		if (contacto instanceof ContactoIndividual) {
 			propiedades.add(new Propiedad(TELEFONO, ((ContactoIndividual) contacto).getTelefono()));
@@ -181,7 +179,8 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 			propiedades.add(new Propiedad(MIEMBROS, ""));
 		} else if (contacto instanceof ContactoGrupo) {
 			propiedades.add(new Propiedad(TELEFONO, ""));
-			propiedades.add(new Propiedad(ADMINISTRADOR, String.valueOf(((ContactoGrupo) contacto).getAdministrador().getCodigo())));
+			propiedades.add(new Propiedad(ADMINISTRADOR,
+					String.valueOf(((ContactoGrupo) contacto).getAdministrador().getCodigo())));
 			propiedades.add(new Propiedad(IMAGEN, ((ContactoGrupo) contacto).getImagen()));
 			propiedades.add(new Propiedad(MIEMBROS, obtenerCodigosMiembros(((ContactoGrupo) contacto).getMiembros())));
 		}
@@ -189,7 +188,7 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 		eContacto.setPropiedades(propiedades);
 		return eContacto;
 	}
-	
+
 	private String obtenerCodigosMiembros(List<ContactoIndividual> miembros) {
 		String lineas = "";
 		for (ContactoIndividual miembro : miembros) {
@@ -197,7 +196,7 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 		}
 		return lineas.trim();
 	}
-	
+
 	private List<ContactoIndividual> obtenerMiembrosDesdeCodigos(String lineas) {
 		List<ContactoIndividual> miembros = new LinkedList<>();
 
@@ -211,22 +210,22 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 		}
 		return miembros;
 	}
-	
+
 	private ContactoIndividual obtenerMiembroDesdeCodigo(String codigo) {
 		int id = Integer.parseInt(codigo);
 		Contacto contacto = getContacto(id);
 		if (contacto instanceof ContactoIndividual) {
 			return (ContactoIndividual) contacto;
 		}
-	    	return null;
+		return null;
 	}
-	
+
 	private Usuario obtenerAdministradorDesdeCodigo(String codigo) {
 		int id = Integer.parseInt(codigo);
 		Usuario admin = AdaptadorUsuarioTDS.INSTANCE.getUsuario(id);
-	    return admin;
+		return admin;
 	}
-	
+
 	private String obtenerCodigosMensajes(List<Mensaje> mensajes) {
 		String lineas = "";
 		for (Mensaje mensaje : mensajes) {
@@ -234,15 +233,15 @@ public enum AdaptadorContactoTDS implements IAdaptadorContactoDAO {
 		}
 		return lineas.trim();
 	}
-	
+
 	private List<Mensaje> obtenerMensajesDesdeCodigos(String codigos) {
-        List<Mensaje> mensajes = new LinkedList<>();
-        
-        StringTokenizer strTok = new StringTokenizer(codigos, " ");
-        AdaptadorMensajeTDS adaptadorM = AdaptadorMensajeTDS.INSTANCE;
-        while (strTok.hasMoreTokens()) {
-        	mensajes.add(adaptadorM.getMensaje(Integer.valueOf((String) strTok.nextElement())));
-        }
-        return mensajes;
-    }
+		List<Mensaje> mensajes = new LinkedList<>();
+
+		StringTokenizer strTok = new StringTokenizer(codigos, " ");
+		AdaptadorMensajeTDS adaptadorM = AdaptadorMensajeTDS.INSTANCE;
+		while (strTok.hasMoreTokens()) {
+			mensajes.add(adaptadorM.getMensaje(Integer.valueOf((String) strTok.nextElement())));
+		}
+		return mensajes;
+	}
 }

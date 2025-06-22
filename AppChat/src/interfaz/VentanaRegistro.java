@@ -42,8 +42,7 @@ public class VentanaRegistro extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(20, 10));
 
-        // WhatsApp-like light green
-        Color bgColor = new Color(220, 248, 198);
+        Color bgColor = Controlador.VERDE_CLARO;
 
         // Panel Central (Formulario)
         panelCentral = new JPanel(new GridBagLayout());
@@ -120,7 +119,6 @@ public class VentanaRegistro extends JFrame implements ActionListener {
         gbc.gridx = 0; gbc.gridy = row;
         panelCentral.add(saludo, gbc);
 
-        // Large, fixed-size JTextArea for Saludo (no scroll)
         textSaludo = new JTextArea(3, 20);
         textSaludo.setLineWrap(true);
         textSaludo.setWrapStyleWord(true);
@@ -140,7 +138,7 @@ public class VentanaRegistro extends JFrame implements ActionListener {
         gbc.gridx = 1; gbc.gridy = row++;
         panelCentral.add(textSaludo, gbc);
 
-        // Panel Imagen de Perfil (GridBagLayout for perfect centering)
+        // Panel Imagen de Perfil
         panelImagen = new JPanel(new GridBagLayout());
         panelImagen.setBorder(BorderFactory.createTitledBorder("Imagen de perfil*"));
         panelImagen.setPreferredSize(new Dimension(180, 260));
@@ -161,10 +159,8 @@ public class VentanaRegistro extends JFrame implements ActionListener {
             iconoImagen = new FotoPerfil(defaultImage, diametro);
             panelImagen.add(iconoImagen, imgGbc);
         } catch (IOException ex) {
-            // If not found, defaultImage remains null
         }
 
-        // Add the rest of the controls below the image (adjust gridy accordingly)
         imgGbc.gridy++;
         imgGbc.weighty = 0;
         imgGbc.insets = new Insets(10, 0, 0, 0);
@@ -190,7 +186,6 @@ public class VentanaRegistro extends JFrame implements ActionListener {
         panelBotones.add(botonCancelar);
         panelBotones.add(botonAceptar);
 
-        // Add panels to window
         getContentPane().setBackground(bgColor);
         add(panelCentral, BorderLayout.CENTER);
         add(panelImagen, BorderLayout.EAST);
@@ -242,6 +237,12 @@ public class VentanaRegistro extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden.", "Error", JOptionPane.ERROR_MESSAGE);
             } else if (rutaImagenSeleccionada == null) {
                 JOptionPane.showMessageDialog(this, "Por favor, seleccione una foto de perfil.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else if (!valorNombre.matches("[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\\s]+")) {
+                JOptionPane.showMessageDialog(this, "El nombre solo puede contener letras.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            } else if (!valorTelefono.matches("\\d{9}")) {
+                JOptionPane.showMessageDialog(this, "El teléfono debe tener exactamente 9 dígitos.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             } else {
                 if (valorSaludo.equals(PLACEHOLDER_SALUDO) || isBlank(valorSaludo)) {
                     valorSaludo = "Hey there, I'm using AppChat";

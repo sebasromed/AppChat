@@ -1,17 +1,18 @@
 package persistencia;
 
-/** 
+/**
  * Factoria concreta DAO para el Servidor de Persistencia de la asignatura TDS.
  * 
  */
 
 public final class TDSFactoriaDAO extends FactoriaDAO {
-	
-	public TDSFactoriaDAO() {	}
-	
+
+	public TDSFactoriaDAO() {
+	}
+
 	@Override
-	public AdaptadorUsuarioTDS getUsuarioDAO() {	
-		return AdaptadorUsuarioTDS.INSTANCE; 
+	public AdaptadorUsuarioTDS getUsuarioDAO() {
+		return AdaptadorUsuarioTDS.INSTANCE;
 	}
 
 	@Override
@@ -23,7 +24,5 @@ public final class TDSFactoriaDAO extends FactoriaDAO {
 	public IAdaptadorMensajeDAO getMensajeDAO() {
 		return AdaptadorMensajeTDS.INSTANCE;
 	}
-	
-	
 
 }

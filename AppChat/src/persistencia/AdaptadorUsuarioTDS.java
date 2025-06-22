@@ -22,7 +22,7 @@ import beans.Propiedad;
  */
 public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	INSTANCE;
-	
+
 	// Constantes para facilitar el manejo de entidades
 	private static final String USUARIO = "usuario";
 	private static final String CODIGO = "codigo";
@@ -32,7 +32,7 @@ public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	private static final String PASSWORD = "password";
 	private static final String FECHA_NACIMIENTO = "fechaNacimiento";
 	private static final String IMAGEN = "imagen";
-	private static final String PREMIUM	= "premium";
+	private static final String PREMIUM = "premium";
 	private static final String SALUDO = "saludo";
 	private static final String CONTACTOS = "contactos";
 	private static final String FECHA_REGISTRO = "fehcaRegistro";
@@ -44,15 +44,17 @@ public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		servPersistencia = FactoriaServicioPersistencia.getInstance().getServicioPersistencia();
 		dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	}
-	 
+
 	@Override
 	public void addUsuario(Usuario usuario) {
 		Entidad eUsuario = null;
-		
+
 		try {
 			eUsuario = servPersistencia.recuperarEntidad(usuario.getCodigo());
-		} catch (NullPointerException e) {}
-		if (eUsuario != null) return;
+		} catch (NullPointerException e) {
+		}
+		if (eUsuario != null)
+			return;
 
 		// registrar primero los atributos que son objetos
 		AdaptadorContactoTDS adaptadorC = AdaptadorContactoTDS.INSTANCE;
@@ -104,7 +106,7 @@ public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 			} else if (prop.getNombre().equals(FECHA_REGISTRO)) {
 				prop.setValor(usuario.getFechaRegistro().format(dateFormat));
 			}
-			
+
 			servPersistencia.modificarPropiedad(prop);
 		}
 	}
@@ -114,20 +116,20 @@ public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		if (PoolDAO.getUnicaInstancia().contiene(id)) {
 			return (Usuario) PoolDAO.getUnicaInstancia().getObjeto(id);
 		}
-		
+
 		Entidad eUsuario = servPersistencia.recuperarEntidad(id);
 		Usuario usuario = entidadToUsuario(eUsuario);
 		usuario.setCodigo(id);
-		
+
 		PoolDAO.getUnicaInstancia().addObjeto(id, usuario);
-		
+
 		List<Contacto> contactos = new LinkedList<Contacto>();
 		contactos = obtenerContactosDesdeCodigos(servPersistencia.recuperarPropiedadEntidad(eUsuario, "contactos"));
-		
+
 		for (Contacto c : contactos) {
 			usuario.addContacto(c);
 		}
-		
+
 		return usuario;
 	}
 
@@ -141,8 +143,7 @@ public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		}
 		return usuarios;
 	}
-	
-	
+
 	// -------------------Funciones auxiliares-----------------------------
 	private Usuario entidadToUsuario(Entidad eUsuario) {
 
@@ -150,14 +151,16 @@ public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 		String apellidos = servPersistencia.recuperarPropiedadEntidad(eUsuario, APELLIDOS);
 		String telefono = servPersistencia.recuperarPropiedadEntidad(eUsuario, TELEFONO);
 		String password = servPersistencia.recuperarPropiedadEntidad(eUsuario, PASSWORD);
-		LocalDate fechaNacimiento = LocalDate.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHA_NACIMIENTO), dateFormat);
+		LocalDate fechaNacimiento = LocalDate
+				.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHA_NACIMIENTO), dateFormat);
 		String saludo = servPersistencia.recuperarPropiedadEntidad(eUsuario, SALUDO);
 		String imagen = servPersistencia.recuperarPropiedadEntidad(eUsuario, IMAGEN);
 		boolean premium = Boolean.valueOf(servPersistencia.recuperarPropiedadEntidad(eUsuario, PREMIUM));
-		LocalDate fechaRegistro = LocalDate.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHA_REGISTRO), dateFormat);
-		
+		LocalDate fechaRegistro = LocalDate.parse(servPersistencia.recuperarPropiedadEntidad(eUsuario, FECHA_REGISTRO),
+				dateFormat);
 
-		Usuario usuario = new Usuario(nombre, apellidos, telefono, password, fechaNacimiento, saludo, imagen, fechaRegistro);
+		Usuario usuario = new Usuario(nombre, apellidos, telefono, password, fechaNacimiento, saludo, imagen,
+				fechaRegistro);
 		usuario.setPremium(premium);
 
 		return usuario;
@@ -166,20 +169,17 @@ public enum AdaptadorUsuarioTDS implements IAdaptadorUsuarioDAO {
 	private Entidad usuarioToEntidad(Usuario usuario) {
 		Entidad eUsuario = new Entidad();
 		eUsuario.setNombre(USUARIO);
-		eUsuario.setPropiedades(new ArrayList<Propiedad>(Arrays.asList(
-				new Propiedad(NOMBRE, usuario.getNombre()),
-				new Propiedad(APELLIDOS, usuario.getApellidos()),
-				new Propiedad(TELEFONO, usuario.getTelefono()),
+		eUsuario.setPropiedades(new ArrayList<Propiedad>(Arrays.asList(new Propiedad(NOMBRE, usuario.getNombre()),
+				new Propiedad(APELLIDOS, usuario.getApellidos()), new Propiedad(TELEFONO, usuario.getTelefono()),
 				new Propiedad(PASSWORD, usuario.getPassword()),
 				new Propiedad(FECHA_NACIMIENTO, usuario.getFechaNacimiento().format(dateFormat)),
-				new Propiedad(SALUDO, usuario.getSaludo()),
-				new Propiedad(IMAGEN, usuario.getImagen()),
+				new Propiedad(SALUDO, usuario.getSaludo()), new Propiedad(IMAGEN, usuario.getImagen()),
 				new Propiedad(PREMIUM, String.valueOf(usuario.isPremium())),
 				new Propiedad(CONTACTOS, obtenerCodigosContactos(usuario.getContactos())),
 				new Propiedad(FECHA_REGISTRO, usuario.getFechaRegistro().format(dateFormat)))));
 		return eUsuario;
 	}
-	
+
 	private String obtenerCodigosContactos(List<Contacto> contactos) {
 		String lineas = "";
 		for (Contacto contacto : contactos) {

@@ -15,52 +15,58 @@ import java.io.File;
 import java.io.IOException;
 
 public abstract class ContactoPanel extends JPanel {
-    
+
 	private Usuario userDeContacto;
 	private Contacto contacto;
-	
+
 	public ContactoPanel(Contacto contacto) {
 		this.contacto = contacto;
-		
+
 		if (contacto instanceof ContactoIndividual) {
-			this.userDeContacto = Controlador.INSTANCE.getUsuarioDeContacto((ContactoIndividual) contacto); // Obtener el usuario de contacto
+			this.userDeContacto = Controlador.INSTANCE.getUsuarioDeContacto((ContactoIndividual) contacto); // Obtener
+																											// el
+																											// usuario
+																											// de
+																											// contacto
 		} else {
 			this.userDeContacto = null; // Los grupos no tienen un usuario de contacto individual
 		}
-		
-        setLayout(new BorderLayout(10, 0));
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        setMaximumSize(new Dimension(300, 80));
-        setPreferredSize(new Dimension(300, 80));
-        
-        BufferedImage imagenPerfil = null;
-        FotoPerfil fotoPerfil = null;
-        int diametro = 80;
-        
-        if (userDeContacto == null) {
-	        try {
-	            imagenPerfil = ImageIO.read(new File(((ContactoGrupo) contacto).getImagen()));
-	            
-	        } catch (IOException ex) {
-	        	 JOptionPane.showMessageDialog(this, "Error cargando foto de perfil", "Error", JOptionPane.ERROR_MESSAGE);
-	             System.exit(1);
-	        }
-        } else {
-        	try {
+
+		setLayout(new BorderLayout(10, 0));
+		setBackground(Color.WHITE);
+		setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+		setMaximumSize(new Dimension(300, 80));
+		setPreferredSize(new Dimension(300, 80));
+
+		BufferedImage imagenPerfil = null;
+		FotoPerfil fotoPerfil = null;
+		int diametro = 80;
+
+		if (userDeContacto == null) {
+			try {
+				imagenPerfil = ImageIO.read(new File(((ContactoGrupo) contacto).getImagen()));
+
+			} catch (IOException ex) {
+				JOptionPane.showMessageDialog(this, "Error cargando foto de perfil", "Error",
+						JOptionPane.ERROR_MESSAGE);
+				System.exit(1);
+			}
+		} else {
+			try {
 				imagenPerfil = ImageIO.read(new File(userDeContacto.getImagen()));
 			} catch (IOException e) {
-				 JOptionPane.showMessageDialog(this, "Error cargando foto de perfil", "Error", JOptionPane.ERROR_MESSAGE);
-			     System.exit(1);
+				JOptionPane.showMessageDialog(this, "Error cargando foto de perfil", "Error",
+						JOptionPane.ERROR_MESSAGE);
+				System.exit(1);
 			}
-        }
-        fotoPerfil = new FotoPerfil(imagenPerfil, diametro);
+		}
+		fotoPerfil = new FotoPerfil(imagenPerfil, diametro);
 
-        add(fotoPerfil, BorderLayout.WEST);
-        
-        construirPanel(contacto);
-    }
-	
+		add(fotoPerfil, BorderLayout.WEST);
+
+		construirPanel(contacto);
+	}
+
 	public Contacto getContacto() {
 		return contacto;
 	}
