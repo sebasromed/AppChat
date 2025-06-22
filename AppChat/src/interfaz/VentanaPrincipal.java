@@ -1,6 +1,12 @@
 package interfaz;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
+
 import java.awt.*;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
@@ -18,7 +24,7 @@ import controlador.Controlador;
 public class VentanaPrincipal extends JFrame implements ActionListener {
 
 	private JPanel contenedor;
-	private JButton contactos, premium, buscarMensajes, logout;;
+	private JButton contactos, premium, buscarMensajes, logout, exportarConversacion;
 	private JPanel panelChat, panelMensajes;
 	private JList<Contacto> listaContactos;
 
@@ -58,6 +64,11 @@ public class VentanaPrincipal extends JFrame implements ActionListener {
 		logout = new JButton("Logout");
 		logout.addActionListener(this);
 		panel_superior.add(logout);
+		
+		exportarConversacion = new JButton("Exportar conversacion");
+	    exportarConversacion.setEnabled(false);
+	    exportarConversacion.addActionListener(e -> exportarConversacion());
+	    panel_superior.add(exportarConversacion);
 
 		ImageIcon icon = null;
 		if (Controlador.INSTANCE.getUsuarioActual().isPremium()) {
@@ -157,6 +168,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener {
 				Contacto seleccionado = listaContactos.getSelectedValue();
 				panelChat.removeAll();
 				if (seleccionado != null) {
+					exportarConversacion.setEnabled(seleccionado != null);
 					panelChat.setLayout(new BorderLayout());
 					panelMensajes = new PanelChat(VentanaPrincipal.this, seleccionado);
 					panelChat.add(panelMensajes, BorderLayout.CENTER);
@@ -209,6 +221,45 @@ public class VentanaPrincipal extends JFrame implements ActionListener {
 
 	public void seleccionarChat(Contacto contacto) {
 		listaContactos.setSelectedValue(contacto, true);
+	}
+	
+	private void exportarConversacion() {
+	    Contacto contacto = listaContactos.getSelectedValue();
+	    if (contacto == null || !(contacto instanceof ContactoIndividual)) {
+	        JOptionPane.showMessageDialog(this, "Seleccione un chat primero o un chat individual");
+	        return;
+	    }
+	    List<Mensaje> mensajes = Controlador.INSTANCE.getMensajesDeContacto(contacto);
+	    JFileChooser fileChooser = new JFileChooser();
+	    fileChooser.setDialogTitle("Guardar PDF de la conversación");
+	    fileChooser.setSelectedFile(new java.io.File("conversacion.pdf"));
+	    int userSelection = fileChooser.showSaveDialog(this);
+	    if (userSelection != JFileChooser.APPROVE_OPTION) return;
+	    java.io.File fileToSave = fileChooser.getSelectedFile();
+
+	    try {
+	        Document document = new Document();
+	        PdfWriter.getInstance(document, new java.io.FileOutputStream(fileToSave));
+	        document.open();
+
+	        // Title
+	        document.add(new Paragraph("Conversación con: " + contacto.getNombre(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+	        document.add(new Paragraph(" "));
+
+	        for (Mensaje m : mensajes) {
+	            String autor = m.getEmisor().getNombre();
+	            String fecha = m.getFechaEnvio().toString();
+	            String texto = m.getTexto() != null ? m.getTexto() : "[Emoji]";
+	            document.add(new Paragraph(autor + " (" + fecha + "):"));
+	            document.add(new Paragraph(texto));
+	            document.add(new Paragraph(" "));
+	        }
+	        document.close();
+	        JOptionPane.showMessageDialog(this, "Conversación exportada correctamente.");
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        JOptionPane.showMessageDialog(this, "Error al exportar la conversación.");
+	    }
 	}
 
 	@Override
